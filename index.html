@@ -20,6 +20,7 @@
         audioChunks.push(event.data);
       });
 
+      //FIXME: maybe clear audioChunks?
       const start = () => mediaRecorder.start();
 
       const stop = () =>
@@ -32,7 +33,7 @@
             resolve({ audioBlob, audioUrl, play });
           });
 
-          mediaRecorder.stop();
+          mediaRecorder.stop()
         });
 
       resolve({ start, stop });
@@ -41,16 +42,47 @@
   const sleep = time => new Promise(resolve => setTimeout(resolve, time));
 
   (async () => {
+
+    function patch(node, attrs) {
+      for (let field in attrs) {
+        node.setAttribute(field, attrs[field]);
+      }
+    };
+
+
+    let el = (tagname, content = '', attrs, children) => {
+      let node = document.createElement(tagname);
+      node.append(content);
+      patch(node, attrs);
+      if (children) {
+        for (let child of children) {
+          node.appendChild(child);
+        }
+      }
+      return node;
+    };
+
     const recorder = await recordAudio();
-    recorder.start();
-    await sleep(3000);
-    const audio = await recorder.stop();
-    audio.play();
+    const element = document.getElementById('interface');
+    
+    const record_start_button = el('button', 'start recording...');
+    record_start_button.onclick = () => recorder.start();
+    interface.appendChild(record_start_button);
+
+    let audio = null;
+
+    const record_end_button = el('button', 'stop recording...');
+    record_end_button.onclick = async () => { audio = await recorder.stop(); };
+    interface.appendChild(record_end_button);
+
+    const audio_play_button = el('button', 'play');
+    audio_play_button.onclick = () => { console.log('playing'); audio.play(); };
+    interface.appendChild(audio_play_button);
   })();
 
   </script>
 </head>
 <body>
-  
+  <div id='interface'></div>
 </body>
 </html>

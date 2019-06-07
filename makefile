@@ -1,2 +1,2 @@
 default:
-	chrome index.html
+	google-chrome-stable index.html
